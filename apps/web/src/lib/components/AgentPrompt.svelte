@@ -84,16 +84,34 @@ ${findingsText}`;
         <h3 id="agent-prompt-title" class="prompt-title">Ask an AI agent to fix this</h3>
       </div>
     </div>
-    <button
-      class="toggle-button"
-      type="button"
-      aria-expanded={isExpanded}
-      aria-controls="agent-prompt-content"
-      onclick={() => (isExpanded = !isExpanded)}
-    >
-      <span>{isExpanded ? 'Hide prompt' : 'Show prompt'}</span>
-      <span class:expanded={isExpanded} class="chevron" aria-hidden="true">⌄</span>
-    </button>
+    <div class="prompt-actions">
+      <button
+        class="copy-button"
+        type="button"
+        onclick={copyPrompt}
+        aria-label={copied ? 'Prompt copied' : 'Copy prompt'}
+      >
+        <span aria-hidden="true">{copied ? '✓' : '⧉'}</span>
+        <span>{copied ? 'Copied' : 'Copy prompt'}</span>
+      </button>
+      <button
+        class="toggle-button"
+        type="button"
+        aria-expanded={isExpanded}
+        aria-controls="agent-prompt-content"
+        aria-label={isExpanded ? 'Hide prompt' : 'Show prompt'}
+        onclick={() => (isExpanded = !isExpanded)}
+      >
+        <span class:expanded={isExpanded} class="chevron" aria-hidden="true">⌄</span>
+      </button>
+      <span class="copy-feedback" role="status" aria-live="polite">
+        {#if copied}
+          Prompt copied to your clipboard.
+        {:else if copyFailed}
+          Copy was blocked. Select the prompt and copy it manually.
+        {/if}
+      </span>
+    </div>
   </div>
 
   {#if isExpanded}
@@ -102,19 +120,6 @@ ${findingsText}`;
         Copy this focused handoff into your coding agent to turn the review into an implementation plan.
       </p>
       <pre class="prompt-text"><code>{prompt}</code></pre>
-      <div class="prompt-actions">
-        <button class="copy-button" type="button" onclick={copyPrompt}>
-          <span aria-hidden="true">{copied ? '✓' : '⧉'}</span>
-          <span>{copied ? 'Copied' : 'Copy prompt'}</span>
-        </button>
-        <span class="copy-feedback" role="status" aria-live="polite">
-          {#if copied}
-            Prompt copied to your clipboard.
-          {:else if copyFailed}
-            Copy was blocked. Select the prompt and copy it manually.
-          {/if}
-        </span>
-      </div>
     </div>
   {/if}
 </section>
@@ -122,10 +127,9 @@ ${findingsText}`;
 <style>
   .prompt-card {
     margin-bottom: var(--space-xl);
-    background: linear-gradient(135deg, var(--color-clay-light), var(--color-surface-raised));
-    border: 1px solid var(--color-border-subtle);
+    background: linear-gradient(135deg, rgba(240, 233, 223, 0.55), rgba(255, 255, 255, 0.35));
+    border: 1px dashed var(--color-border);
     border-radius: var(--radius-lg);
-    box-shadow: var(--shadow-sm);
     overflow: hidden;
     animation: fadeSlideUp 0.5s ease 0.12s both;
   }
@@ -145,7 +149,7 @@ ${findingsText}`;
   }
 
   .prompt-icon {
-    color: var(--color-accent);
+    color: var(--color-text-muted);
     font-size: 1.25rem;
     line-height: 1.2;
   }
@@ -153,7 +157,7 @@ ${findingsText}`;
   .prompt-eyebrow {
     display: block;
     margin-bottom: var(--space-xs);
-    color: var(--color-accent);
+    color: var(--color-text-muted);
     font-size: 0.7rem;
     font-weight: 600;
     letter-spacing: 0.08em;
@@ -161,7 +165,7 @@ ${findingsText}`;
   }
 
   .prompt-title {
-    color: var(--color-text);
+    color: var(--color-text-secondary);
     font-family: var(--font-display);
     font-size: 1.2rem;
   }
@@ -182,14 +186,18 @@ ${findingsText}`;
 
   .toggle-button {
     flex-shrink: 0;
-    padding: var(--space-sm) var(--space-md);
-    color: var(--color-accent);
-    background: var(--color-surface-raised);
+    justify-content: center;
+    min-width: 2.125rem;
+    min-height: 2.125rem;
+    padding: var(--space-sm);
+    color: var(--color-text-muted);
+    background: rgba(255, 255, 255, 0.45);
   }
 
   .toggle-button:hover {
     border-color: var(--color-accent-light);
-    background: var(--color-clay-light);
+    background: rgba(255, 255, 255, 0.75);
+    color: var(--color-accent);
   }
 
   .chevron {
@@ -219,8 +227,8 @@ ${findingsText}`;
     margin: var(--space-md) 0;
     padding: var(--space-md);
     overflow: auto;
-    color: var(--color-text);
-    background: rgba(255, 255, 255, 0.65);
+    color: var(--color-text-secondary);
+    background: rgba(255, 255, 255, 0.45);
     border: 1px solid var(--color-border-subtle);
     border-radius: var(--radius-sm);
     font-family: var(--font-mono);
@@ -232,8 +240,9 @@ ${findingsText}`;
   .prompt-actions {
     display: flex;
     align-items: center;
-    gap: var(--space-md);
-    min-height: 2rem;
+    justify-content: flex-end;
+    gap: var(--space-sm);
+    flex-shrink: 0;
   }
 
   .copy-button {
@@ -241,6 +250,7 @@ ${findingsText}`;
     color: #fff;
     background: var(--color-accent);
     border-color: var(--color-accent);
+    flex-shrink: 0;
   }
 
   .copy-button:hover {
@@ -252,6 +262,7 @@ ${findingsText}`;
     color: var(--color-sage);
     font-size: 0.78rem;
     line-height: 1.4;
+    max-width: 14rem;
   }
 
   @keyframes fadeSlideUp {
@@ -271,14 +282,16 @@ ${findingsText}`;
       flex-direction: column;
     }
 
-    .toggle-button {
+    .prompt-actions {
       align-self: flex-end;
+      align-items: flex-end;
+      flex-wrap: wrap;
+      justify-content: flex-end;
     }
 
-    .prompt-actions {
-      align-items: flex-start;
-      flex-direction: column;
-      gap: var(--space-sm);
+    .copy-feedback {
+      flex-basis: 100%;
+      text-align: right;
     }
   }
 </style>
