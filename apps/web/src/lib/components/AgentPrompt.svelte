@@ -293,8 +293,9 @@ ${findingsText}`;
 
   .copy-button {
     justify-content: center;
-    width: 8.75rem;
+    width: 11.5rem;
     padding: var(--space-sm) var(--space-md);
+    white-space: nowrap;
     color: #fff;
     background: var(--color-accent);
     border-color: var(--color-accent);
