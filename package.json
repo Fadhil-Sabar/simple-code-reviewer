@@ -1,0 +1,7 @@
+{
+  "name": "smart-code-reviewer",
+  "private": true,
+  "workspaces": [
+    "apps/*"
+  ]
+}
