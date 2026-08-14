@@ -5,9 +5,9 @@
     "apps/*"
   ],
   "scripts": {
-    "dev": "bun --filter '*' run dev",
-    "dev:api": "bun --cwd apps/api run dev",
-    "dev:web": "bun --cwd apps/web run dev",
+    "dev": "bun run dev:api & bun run dev:web & wait",
+    "dev:api": "bun run --cwd apps/api dev",
+    "dev:web": "bun run --cwd apps/web dev",
     "test": "bun test --cwd apps/api",
     "check": "bun run --cwd apps/api typecheck && bun run --cwd apps/web check"
   }
