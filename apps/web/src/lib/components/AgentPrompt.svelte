@@ -86,13 +86,16 @@ ${findingsText}`;
     </div>
     <div class="prompt-actions">
       <button
+        class:copied
         class="copy-button"
         type="button"
         onclick={copyPrompt}
         aria-label={copied ? 'Prompt copied' : 'Copy prompt'}
+        aria-live="polite"
       >
         {#if copied}
           <svg
+            class="copy-success-icon"
             xmlns="http://www.w3.org/2000/svg"
             width="24"
             height="24"
@@ -109,7 +112,7 @@ ${findingsText}`;
         {:else}
           <span aria-hidden="true">⧉</span>
         {/if}
-        <span>{copied ? 'Prompt Copied!' : 'Copy prompt'}</span>
+        <span class="copy-label">{copied ? 'Prompt Copied!' : 'Copy prompt'}</span>
       </button>
       <button
         class="toggle-button"
@@ -289,16 +292,34 @@ ${findingsText}`;
   }
 
   .copy-button {
+    justify-content: center;
+    width: 8.75rem;
     padding: var(--space-sm) var(--space-md);
     color: #fff;
     background: var(--color-accent);
     border-color: var(--color-accent);
     flex-shrink: 0;
+    transition: background 0.25s ease, border-color 0.25s ease, transform 0.25s ease;
   }
 
   .copy-button:hover {
     background: var(--color-accent-hover);
     border-color: var(--color-accent-hover);
+  }
+
+  .copy-button.copied {
+    background: var(--color-sage);
+    border-color: var(--color-sage);
+  }
+
+  .copy-label,
+  .copy-success-icon {
+    animation: copyContentIn 0.25s ease both;
+  }
+
+  .copy-success-icon {
+    width: 1rem;
+    height: 1rem;
   }
 
   .copy-feedback {
@@ -312,6 +333,17 @@ ${findingsText}`;
     from {
       opacity: 0;
       transform: translateY(8px);
+    }
+    to {
+      opacity: 1;
+      transform: translateY(0);
+    }
+  }
+
+  @keyframes copyContentIn {
+    from {
+      opacity: 0;
+      transform: translateY(3px);
     }
     to {
       opacity: 1;
