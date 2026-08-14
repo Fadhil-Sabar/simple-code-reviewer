@@ -9,7 +9,7 @@
   let result = $state<ReviewResponse | null>(null);
   let error = $state<ReviewError | null>(null);
 
-  const MAX_CODE_LENGTH = 15000;
+  const MAX_CODE_LENGTH = 20000;
 
   let isValid = $derived(code.trim().length > 0 && code.length <= MAX_CODE_LENGTH);
   let isDisabled = $derived(status === 'loading' || !isValid);

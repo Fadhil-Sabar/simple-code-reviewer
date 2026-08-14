@@ -3,5 +3,12 @@
   "private": true,
   "workspaces": [
     "apps/*"
-  ]
+  ],
+  "scripts": {
+    "dev": "bun --filter '*' run dev",
+    "dev:api": "bun --cwd apps/api run dev",
+    "dev:web": "bun --cwd apps/web run dev",
+    "test": "bun test --cwd apps/api",
+    "check": "bun run --cwd apps/api typecheck && bun run --cwd apps/web check"
+  }
 }

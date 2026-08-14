@@ -52,7 +52,6 @@
       onkeydown={handleKeydown}
       spellcheck="false"
       autocomplete="off"
-      autocorrect="off"
       autocapitalize="off"
     ></textarea>
   </div>

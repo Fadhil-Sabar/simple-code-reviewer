@@ -9,7 +9,7 @@
   const strokeWidth = 8;
   const radius = (size - strokeWidth) / 2;
   const circumference = 2 * Math.PI * radius;
-  const offset = circumference - (score / 10) * circumference;
+  let offset = $derived(circumference - (score / 10) * circumference);
 
   let scoreColor = $derived(
     score >= 8 ? 'var(--color-sage)' : score >= 5 ? 'var(--color-clay)' : 'var(--color-terracotta)'

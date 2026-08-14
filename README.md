@@ -4,8 +4,10 @@ AI-assisted pre-review tool for developers. It performs an early, practical
 code review (Readability, Structure, Maintainability) before a human review,
 using an OpenAI-compatible LLM API.
 
-This repo currently contains the **backend** (`apps/api`). The SvelteKit
-frontend from the PRD is planned as `apps/web`.
+This repo contains a SvelteKit frontend (`apps/web`) and a Hono backend
+(`apps/api`). During local development, Vite proxies browser requests from
+`/api` to the backend at `http://localhost:3000`, so the frontend never has to
+know about LLM credentials.
 
 ## Tech Stack
 
@@ -23,7 +25,7 @@ frontend from the PRD is planned as `apps/web`.
 ├── PRD.md
 ├── package.json          # Bun workspace root
 └── apps/
-    └── api/              # Hono + Bun backend
+    ├── api/              # Hono + Bun backend
         ├── src/
         │   ├── index.ts        # public exports
         │   ├── server.ts       # HTTP entrypoint
@@ -37,7 +39,8 @@ frontend from the PRD is planned as `apps/web`.
         │       ├── prompt.ts   # structured review prompt
         │       ├── review.ts   # orchestration + JSON validation
         │       └── types.ts    # domain types
-        └── test/              # unit + integration tests
+    │   └── test/              # unit + integration tests
+    └── web/              # SvelteKit frontend
 ```
 
 ## Setup
@@ -61,9 +64,10 @@ frontend and `.env` is git-ignored.
 ## Run
 
 ```bash
-bun run dev:api        # from the repo root
-# or
-bun run --cwd apps/api dev
+bun run dev            # starts the API on :3000 and the web app on :5173
+# or run either service individually
+bun run dev:api
+bun run dev:web
 ```
 
 Server listens on `PORT` (default `3000`).
@@ -128,5 +132,5 @@ Errors are returned as:
 
 ```bash
 bun test --cwd apps/api
-bun run --cwd apps/api typecheck
+bun run check
 ```
