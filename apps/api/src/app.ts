@@ -8,16 +8,34 @@ import type { ContentfulStatusCode } from "hono/utils/http-status";
 import type { AppConfig } from "./lib/config";
 import { AppError, ValidationError } from "./lib/errors";
 import { reviewRoute, type ReviewDeps } from "./routes/review";
+import { ReviewRateLimiter, requestClientId } from "./lib/security";
 
 export function createApp(config: AppConfig, deps: ReviewDeps = {}): Hono {
   const app = new Hono();
 
-  app.use("/api/*", cors());
+  const limiter = new ReviewRateLimiter({
+    maxRequests: config.rateLimitMaxRequests ?? 10,
+    windowMs: config.rateLimitWindowMs ?? 60_000,
+    maxConcurrent: config.maxConcurrentReviews ?? 4,
+  });
+
+  app.use("/api/*", cors({ origin: config.corsAllowedOrigins ?? ["http://localhost:5173"] }));
+  app.use("/api/review", async (c, next) => {
+    const release = limiter.acquire(requestClientId(c.req.raw.headers));
+    try {
+      await next();
+    } finally {
+      release();
+    }
+  });
 
   app.onError((err, c) => {
     if (err instanceof AppError) {
+      const message = err instanceof ValidationError || err.status === 413
+        ? err.message
+        : "Review service is temporarily unavailable. Please try again later.";
       return c.json(
-        { error: { message: err.message, type: err.name } },
+        { error: { message, type: err.name } },
         err.status as ContentfulStatusCode,
       );
     }

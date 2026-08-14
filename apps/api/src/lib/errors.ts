@@ -18,6 +18,14 @@ export class ValidationError extends AppError {
   }
 }
 
+/** 413 - request exceeds the API's accepted body-size limit. */
+export class RequestTooLargeError extends AppError {
+  constructor(message = "Request body is too large.") {
+    super(413, message);
+    this.name = "RequestTooLargeError";
+  }
+}
+
 /** 401 - LLM API key missing or rejected. */
 export class LlmAuthError extends AppError {
   constructor(message: string) {

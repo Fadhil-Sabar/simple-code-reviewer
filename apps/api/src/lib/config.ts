@@ -19,12 +19,27 @@ export interface AppConfig {
   maxCodeLength: number;
   /** HTTP port the server listens on. */
   port: number;
+  /** Origins permitted to invoke the API from a browser. */
+  corsAllowedOrigins?: string[];
+  /** Maximum accepted JSON request size in bytes. */
+  maxRequestBodyBytes?: number;
+  /** Requests permitted per client over one rate-limit window. */
+  rateLimitMaxRequests?: number;
+  /** Rate-limit window duration in milliseconds. */
+  rateLimitWindowMs?: number;
+  /** Maximum simultaneous LLM review calls in one API process. */
+  maxConcurrentReviews?: number;
 }
 
 const DEFAULT_TIMEOUT_MS = 30_000;
 const DEFAULT_MAX_RETRIES = 2;
 const DEFAULT_MAX_CODE_LENGTH = 20_000;
 const DEFAULT_PORT = 3000;
+const DEFAULT_MAX_REQUEST_BODY_BYTES = 25_000;
+const DEFAULT_RATE_LIMIT_MAX_REQUESTS = 10;
+const DEFAULT_RATE_LIMIT_WINDOW_MS = 60_000;
+const DEFAULT_MAX_CONCURRENT_REVIEWS = 4;
+const DEFAULT_CORS_ALLOWED_ORIGINS = ["http://localhost:5173"];
 
 /** Thrown when required configuration is missing. */
 export class ConfigError extends Error {
@@ -56,6 +71,17 @@ function readRequired(env: NodeJS.ProcessEnv, name: string): string {
   return value;
 }
 
+function readOrigins(env: NodeJS.ProcessEnv): string[] {
+  const raw = env.CORS_ALLOWED_ORIGINS?.trim();
+  if (!raw) return DEFAULT_CORS_ALLOWED_ORIGINS;
+
+  const origins = raw.split(",").map((origin) => origin.trim()).filter(Boolean);
+  if (origins.length === 0 || origins.includes("*")) {
+    throw new ConfigError("CORS_ALLOWED_ORIGINS must contain explicit origins, not '*'.");
+  }
+  return origins;
+}
+
 /**
  * Build config from the current environment.
  * Throws {@link ConfigError} when required LLM settings are absent.
@@ -69,5 +95,10 @@ export function loadConfig(env: NodeJS.ProcessEnv = process.env): AppConfig {
     llmMaxRetries: readInt(env, "LLM_MAX_RETRIES", DEFAULT_MAX_RETRIES),
     maxCodeLength: readInt(env, "MAX_CODE_LENGTH", DEFAULT_MAX_CODE_LENGTH),
     port: readInt(env, "PORT", DEFAULT_PORT),
+    corsAllowedOrigins: readOrigins(env),
+    maxRequestBodyBytes: readInt(env, "MAX_REQUEST_BODY_BYTES", DEFAULT_MAX_REQUEST_BODY_BYTES),
+    rateLimitMaxRequests: readInt(env, "RATE_LIMIT_MAX_REQUESTS", DEFAULT_RATE_LIMIT_MAX_REQUESTS),
+    rateLimitWindowMs: readInt(env, "RATE_LIMIT_WINDOW_MS", DEFAULT_RATE_LIMIT_WINDOW_MS),
+    maxConcurrentReviews: readInt(env, "MAX_CONCURRENT_REVIEWS", DEFAULT_MAX_CONCURRENT_REVIEWS),
   };
 }

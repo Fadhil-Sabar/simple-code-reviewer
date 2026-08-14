@@ -19,6 +19,11 @@ function makeConfig(overrides: Partial<AppConfig> = {}): AppConfig {
     llmMaxRetries: 2,
     maxCodeLength: 200,
     port: 3000,
+    corsAllowedOrigins: ["http://localhost:5173"],
+    maxRequestBodyBytes: 25_000,
+    rateLimitMaxRequests: 10,
+    rateLimitWindowMs: 60_000,
+    maxConcurrentReviews: 4,
     ...overrides,
   };
 }
@@ -192,7 +197,7 @@ describe("CORS and routing", () => {
       },
       body: JSON.stringify({ code: "const a = 1;" }),
     });
-    expect(res.headers.get("access-control-allow-origin")).toBe("*");
+    expect(res.headers.get("access-control-allow-origin")).toBe("http://localhost:5173");
   });
 
   it("returns 404 for unknown routes", async () => {

@@ -127,6 +127,15 @@ Errors are returned as:
 | `LLM_MAX_RETRIES` | `2`     | Retries on 5xx / rate limits       |
 | `MAX_CODE_LENGTH` | `20000` | Max snippet length in characters   |
 | `PORT`            | `3000`  | HTTP port                          |
+| `CORS_ALLOWED_ORIGINS` | `http://localhost:5173` | Comma-separated permitted browser origins |
+| `MAX_REQUEST_BODY_BYTES` | `25000` | Maximum JSON request size |
+| `RATE_LIMIT_MAX_REQUESTS` | `10` | Requests per client per window |
+| `RATE_LIMIT_WINDOW_MS` | `60000` | Rate-limit window duration |
+| `MAX_CONCURRENT_REVIEWS` | `4` | Concurrent LLM review cap per process |
+
+For public deployments, set `CORS_ALLOWED_ORIGINS` to the exact frontend
+origin and enforce matching rate limits at a WAF or reverse proxy. The
+in-process limiter protects a single API instance only.
 
 ## Tests
 

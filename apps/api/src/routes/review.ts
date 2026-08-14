@@ -7,7 +7,7 @@
 import { Hono } from "hono";
 import { z } from "zod";
 import type { AppConfig } from "../lib/config";
-import { ValidationError } from "../lib/errors";
+import { RequestTooLargeError, ValidationError } from "../lib/errors";
 import { reviewCode } from "../lib/review";
 import type { CodeReview, ReviewRequest } from "../lib/types";
 
@@ -30,8 +30,13 @@ export function reviewRoute(config: AppConfig, deps: ReviewDeps = {}): Hono {
   app.post("/review", async (c) => {
     let body: unknown;
     try {
+      const contentLength = c.req.header("content-length");
+      if (contentLength && Number(contentLength) > (config.maxRequestBodyBytes ?? 25_000)) {
+        throw new RequestTooLargeError();
+      }
       body = await c.req.json();
-    } catch {
+    } catch (err) {
+      if (err instanceof RequestTooLargeError) throw err;
       throw new ValidationError("Request body must be valid JSON.");
     }
 
