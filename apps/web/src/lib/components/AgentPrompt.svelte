@@ -91,8 +91,25 @@ ${findingsText}`;
         onclick={copyPrompt}
         aria-label={copied ? 'Prompt copied' : 'Copy prompt'}
       >
-        <span aria-hidden="true">{copied ? '✓' : '⧉'}</span>
-        <span>{copied ? 'Copied' : 'Copy prompt'}</span>
+        {#if copied}
+          <svg
+            xmlns="http://www.w3.org/2000/svg"
+            width="24"
+            height="24"
+            viewBox="0 0 24 24"
+            fill="none"
+            stroke="currentColor"
+            stroke-width="2"
+            stroke-linecap="round"
+            stroke-linejoin="round"
+            aria-hidden="true"
+          >
+            <path d="M20 6 9 17l-5-5" />
+          </svg>
+        {:else}
+          <span aria-hidden="true">⧉</span>
+        {/if}
+        <span>{copied ? 'Prompt Copied!' : 'Copy prompt'}</span>
       </button>
       <button
         class="toggle-button"
@@ -137,9 +154,7 @@ ${findingsText}`;
         {/if}
       </button>
       <span class="copy-feedback" role="status" aria-live="polite">
-        {#if copied}
-          Prompt copied to your clipboard.
-        {:else if copyFailed}
+        {#if copyFailed}
           Copy was blocked. Select the prompt and copy it manually.
         {/if}
       </span>
