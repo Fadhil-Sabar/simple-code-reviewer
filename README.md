@@ -74,7 +74,9 @@ Server listens on `PORT` (default `3000`).
 
 ## Docker
 
-The Docker setup runs the Bun API service. It is intended for self-hosting the API while the SvelteKit frontend is deployed separately (for example, on Cloudflare).
+The Docker setup runs both services: the Bun API and the SvelteKit frontend
+(static build) served by Nginx, which also proxies `/api` to the backend so
+everything lives behind a single origin.
 
 ```bash
 cp apps/api/.env.example apps/api/.env
@@ -82,7 +84,47 @@ cp apps/api/.env.example apps/api/.env
 docker compose up --build
 ```
 
-The API is available at `http://localhost:3000`, with a health check at `GET /health`. To use another host port, set `API_PORT`, for example: `API_PORT=8080 docker compose up --build`.
+Services and ports:
+
+| Service | Container port | Host port (env override) |
+| ------- | -------------- | ------------------------ |
+| `api`   | `3000` (internal only) | `API_PORT`, default `3000` |
+| `web`   | `80` (nginx) | `WEB_PORT`, default `3080` |
+
+The web app is available at `http://localhost:3080`, and the API health check
+at `http://localhost:3080/health`. The API is only reachable through the Nginx
+proxy; it is not exposed directly to the host.
+
+## Testing
+
+Live test against the deployed instance: https://reviewer.fadhil-andriawan.dev/
+
+Test input (nested validation that an AI reviewer should flag):
+
+```js
+function processUserData(user) {
+  if (user) {
+    if (user.name) {
+      if (user.name.length > 0) {
+        if (user.email) {
+          if (user.email.includes('@')) {
+            return user.name + ' ' + user.email;
+          }
+        }
+      }
+    }
+  }
+  return '';
+}
+
+const result = processUserData({ name: 'Alice', email: 'alice@example.com' });
+console.log(result);
+```
+
+Result: overall score **4/10**, with 2 issues each across Readability,
+Structure, and Maintainability, plus a positive note.
+
+![Review result](docs/review-full.png)
 
 ## API
 
