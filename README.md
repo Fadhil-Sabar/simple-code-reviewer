@@ -72,6 +72,18 @@ bun run dev:web
 
 Server listens on `PORT` (default `3000`).
 
+## Docker
+
+The Docker setup runs the Bun API service. It is intended for self-hosting the API while the SvelteKit frontend is deployed separately (for example, on Cloudflare).
+
+```bash
+cp apps/api/.env.example apps/api/.env
+# Fill in LLM_API_KEY, LLM_BASE_URL, and LLM_MODEL.
+docker compose up --build
+```
+
+The API is available at `http://localhost:3000`, with a health check at `GET /health`. To use another host port, set `API_PORT`, for example: `API_PORT=8080 docker compose up --build`.
+
 ## API
 
 ### `GET /health`

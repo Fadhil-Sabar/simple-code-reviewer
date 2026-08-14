@@ -1,0 +1,16 @@
+.git
+.github
+.jcode
+node_modules
+**/node_modules
+.svelte-kit
+**/.svelte-kit
+.env
+.env.*
+!.env.example
+coverage
+dist
+.DS_Store
+README.md
+PRD.md
+deploy
