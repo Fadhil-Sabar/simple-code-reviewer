@@ -138,6 +138,41 @@ describe("POST /api/review validation", () => {
     const body = (await res.json()) as { error: { message: string } };
     expect(body.error.message).toContain("too long");
   });
+
+  it("rejects a request whose declared body is too large", async () => {
+    const app = makeApp({ config: { maxRequestBodyBytes: 20 } });
+    const res = await app.request("/api/review", {
+      method: "POST",
+      headers: {
+        "Content-Type": "application/json",
+        "Content-Length": "21",
+      },
+      body: JSON.stringify({ code: "x" }),
+    });
+    expect(res.status).toBe(413);
+  });
+
+  it("rejects an oversized chunked body without a content-length header", async () => {
+    const app = makeApp({ config: { maxRequestBodyBytes: 20 } });
+    const encoded = new TextEncoder().encode(JSON.stringify({ code: "x".repeat(20) }));
+    const body = new ReadableStream<Uint8Array>({
+      start(controller) {
+        controller.enqueue(encoded.slice(0, 10));
+        controller.enqueue(encoded.slice(10));
+        controller.close();
+      },
+    });
+    const request = new Request("http://localhost/api/review", {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body,
+      duplex: "half",
+    } as RequestInit & { duplex: "half" });
+
+    expect(request.headers.get("content-length")).toBeNull();
+    const res = await app.fetch(request);
+    expect(res.status).toBe(413);
+  });
 });
 
 describe("error mapping", () => {

@@ -135,7 +135,9 @@ Errors are returned as:
 
 For public deployments, set `CORS_ALLOWED_ORIGINS` to the exact frontend
 origin and enforce matching rate limits at a WAF or reverse proxy. The
-in-process limiter protects a single API instance only.
+in-process limiter protects a single API instance only. The repository includes
+`deploy/nginx.conf` as a deployable Nginx baseline with matching body-size,
+rate-limit, method, timeout, and request-buffering controls.
 
 ## Tests
 

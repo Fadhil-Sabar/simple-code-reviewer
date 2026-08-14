@@ -23,6 +23,57 @@ export interface ReviewDeps {
   runReview?: (config: AppConfig, code: string) => Promise<CodeReview>;
 }
 
+async function readJsonBody(request: Request, maxBytes: number): Promise<unknown> {
+  const contentLength = request.headers.get("content-length");
+  if (contentLength && Number(contentLength) > maxBytes) {
+    throw new RequestTooLargeError();
+  }
+
+  const body = request.body;
+  if (!body) {
+    throw new ValidationError("Request body must be valid JSON.");
+  }
+
+  const reader = body.getReader();
+  const chunks: Uint8Array[] = [];
+  let totalBytes = 0;
+
+  try {
+    while (true) {
+      const { done, value } = await reader.read();
+      if (done) break;
+
+      const chunk = value instanceof Uint8Array ? value : new Uint8Array(value);
+      totalBytes += chunk.byteLength;
+      if (totalBytes > maxBytes) {
+        try {
+          await reader.cancel();
+        } catch {
+          // The request is already over the limit; cancellation failure must
+          // not change the response from 413.
+        }
+        throw new RequestTooLargeError();
+      }
+      chunks.push(chunk);
+    }
+  } finally {
+    reader.releaseLock();
+  }
+
+  const bytes = new Uint8Array(totalBytes);
+  let offset = 0;
+  for (const chunk of chunks) {
+    bytes.set(chunk, offset);
+    offset += chunk.byteLength;
+  }
+
+  try {
+    return JSON.parse(new TextDecoder().decode(bytes));
+  } catch {
+    throw new ValidationError("Request body must be valid JSON.");
+  }
+}
+
 export function reviewRoute(config: AppConfig, deps: ReviewDeps = {}): Hono {
   const app = new Hono();
   const runReview = deps.runReview ?? reviewCode;
@@ -30,13 +81,10 @@ export function reviewRoute(config: AppConfig, deps: ReviewDeps = {}): Hono {
   app.post("/review", async (c) => {
     let body: unknown;
     try {
-      const contentLength = c.req.header("content-length");
-      if (contentLength && Number(contentLength) > (config.maxRequestBodyBytes ?? 25_000)) {
-        throw new RequestTooLargeError();
-      }
-      body = await c.req.json();
+      body = await readJsonBody(c.req.raw, config.maxRequestBodyBytes ?? 25_000);
     } catch (err) {
       if (err instanceof RequestTooLargeError) throw err;
+      if (err instanceof ValidationError) throw err;
       throw new ValidationError("Request body must be valid JSON.");
     }
 
