@@ -3,10 +3,11 @@ services:
     build:
       context: .
       dockerfile: Dockerfile
+      target: runtime
     env_file:
       - ./apps/api/.env
-    ports:
-      - "${API_PORT:-3000}:3000"
+    expose:
+      - "3000"
     restart: unless-stopped
     healthcheck:
       test:
@@ -15,6 +16,31 @@ services:
           "bun",
           "-e",
           "fetch('http://127.0.0.1:3000/health').then((response) => process.exit(response.ok ? 0 : 1)).catch(() => process.exit(1))"
+        ]
+      interval: 30s
+      timeout: 5s
+      retries: 3
+      start_period: 10s
+
+  web:
+    build:
+      context: .
+      dockerfile: Dockerfile
+      target: web
+    ports:
+      - "${WEB_PORT:-3080}:80"
+    depends_on:
+      - api
+    restart: unless-stopped
+    healthcheck:
+      test:
+        [
+          "CMD",
+          "wget",
+          "-q",
+          "-O",
+          "-",
+          "http://127.0.0.1/health"
         ]
       interval: 30s
       timeout: 5s
