@@ -2,6 +2,7 @@
   import type { ReviewResponse, ReviewCategory } from '$lib/types';
   import ScoreRing from './ScoreRing.svelte';
   import CategoryCard from './CategoryCard.svelte';
+  import AgentPrompt from './AgentPrompt.svelte';
 
   interface Props {
     result: ReviewResponse;
@@ -28,6 +29,8 @@
       </p>
     </div>
   </div>
+
+  <AgentPrompt {result} />
 
   <div class="results-grid">
     {#each categories as cat, i}
