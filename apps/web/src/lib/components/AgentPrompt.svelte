@@ -102,7 +102,39 @@ ${findingsText}`;
         aria-label={isExpanded ? 'Hide prompt' : 'Show prompt'}
         onclick={() => (isExpanded = !isExpanded)}
       >
-        <span class:expanded={isExpanded} class="chevron" aria-hidden="true">⌄</span>
+        {#if isExpanded}
+          <svg
+            class="chevron"
+            xmlns="http://www.w3.org/2000/svg"
+            width="24"
+            height="24"
+            viewBox="0 0 24 24"
+            fill="none"
+            stroke="currentColor"
+            stroke-width="2"
+            stroke-linecap="round"
+            stroke-linejoin="round"
+            aria-hidden="true"
+          >
+            <path d="m18 15-6-6-6 6" />
+          </svg>
+        {:else}
+          <svg
+            class="chevron"
+            xmlns="http://www.w3.org/2000/svg"
+            width="24"
+            height="24"
+            viewBox="0 0 24 24"
+            fill="none"
+            stroke="currentColor"
+            stroke-width="2"
+            stroke-linecap="round"
+            stroke-linejoin="round"
+            aria-hidden="true"
+          >
+            <path d="m6 9 6 6 6-6" />
+          </svg>
+        {/if}
       </button>
       <span class="copy-feedback" role="status" aria-live="polite">
         {#if copied}
@@ -201,13 +233,9 @@ ${findingsText}`;
   }
 
   .chevron {
-    font-size: 1rem;
-    line-height: 0.7;
-    transition: transform 0.2s ease;
-  }
-
-  .chevron.expanded {
-    transform: rotate(180deg);
+    display: block;
+    width: 1rem;
+    height: 1rem;
   }
 
   .prompt-content {
