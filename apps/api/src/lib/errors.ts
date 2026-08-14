@@ -36,9 +36,16 @@ export class RateLimitError extends AppError {
 
 /** 502 - provider returned an error (5xx) or an invalid response. */
 export class LlmUpstreamError extends AppError {
-  constructor(message: string) {
+  /**
+   * Whether this error stems from a transient condition worth retrying
+   * (e.g. provider 5xx). Non-retryable by default.
+   */
+  readonly retryable: boolean;
+
+  constructor(message: string, retryable = false) {
     super(502, message);
     this.name = "LlmUpstreamError";
+    this.retryable = retryable;
   }
 }
 
